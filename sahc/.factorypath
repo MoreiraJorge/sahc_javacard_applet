@@ -1,0 +1,4 @@
+<factorypath>
+    <factorypathentry kind="VARJAR" id="JC_TOOLS_HOME/lib/tools.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="JavaCard_Platform_1_HOME/lib/api_classic_annotations.jar" enabled="true" runInBatchMode="false"/>
+</factorypath>

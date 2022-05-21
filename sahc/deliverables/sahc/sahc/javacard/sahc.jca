@@ -1,0 +1,102 @@
+// converted by version  [v3.1.0]
+// on Sat May 21 17:36:23 BST 2022
+
+.package sahc {
+	.aid 0x1:0x23:0x45:0x67:0x89:0x0;
+	.version 1.0;
+
+	.imports {
+		0xA0:0x0:0x0:0x0:0x62:0x1:0x1 1.8;		//javacard/framework
+		0xA0:0x0:0x0:0x0:0x62:0x0:0x1 1.0;		//java/lang
+	}
+
+	.applet {
+		0x1:0x23:0x45:0x67:0x89:0x11 sahcApplet;
+	}
+
+	.constantPool {
+		// 0
+		staticMethodRef sahcApplet/<init>()V;
+		// 1
+		.classRef sahcApplet;
+		// 2
+		staticMethodRef 0.3.0()V;		// javacard/framework/Applet.<init>()V
+		// 3
+		virtualMethodRef 0.3.1()V;		// register()V
+		// 4
+		staticMethodRef 1.0.0()V;		// java/lang/Object.<init>()V
+	}
+
+	.class public sahcApplet 0 extends 0.3 {		// extends javacard/framework/Applet
+
+		.publicMethodTable 7 8 {
+			equals(Ljava/lang/Object;)Z 0;
+			register()V 1;
+			register([BSB)V 2;
+			selectingApplet()Z 3;
+			deselect()V 4;
+			getShareableInterfaceObject(Ljavacard/framework/AID;B)Ljavacard/framework/Shareable; 5;
+			select()Z 6;
+			process(Ljavacard/framework/APDU;)V 7;
+		}
+
+		.packageMethodTable 0 {
+		}
+
+		.method public static install([BSB)V 0 {
+			.stack 1;
+			.locals 0;
+
+				L0:	new 1;		// sahc/sahcApplet
+					invokespecial 0;		// sahc/sahcApplet.<init>()V
+					return;
+		}
+
+		.method protected <init>()V 1 {
+			.stack 1;
+			.locals 0;
+
+				L0:	aload_0;
+					invokespecial 2;		// javacard/framework/Applet.<init>()V
+					aload_0;
+					invokevirtual 3;		// register()V
+					return;
+		}
+
+		.method public process(Ljavacard/framework/APDU;)V 7 {
+			.stack 0;
+			.locals 0;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	return;
+		}
+
+	}
+
+	.class final sahcAppletStrings extends 1.0 {		// extends java/lang/Object
+
+		.fields {
+			static final byte[] Package = {115,97,104,99};		// [B
+			static final byte[] AppletName = {115,97,104,99,65,112,112,108,101,116};		// [B
+		}
+
+		.publicMethodTable 1 1 {
+			equals(Ljava/lang/Object;)Z 0;
+		}
+
+		.packageMethodTable 0 {
+		}
+
+		.method  <init>()V {
+			.stack 1;
+			.locals 0;
+
+				L0:	aload_0;
+					invokespecial 4;		// java/lang/Object.<init>()V
+					return;
+		}
+
+	}
+
+}

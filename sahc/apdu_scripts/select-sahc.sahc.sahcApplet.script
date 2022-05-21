@@ -1,0 +1,12 @@
+// Copyright (c) 1998, 2021, Oracle and/or its affiliates. All rights reserved.
+
+// Applet Selection APDU Script
+//
+// Package:     sahc.sahc
+// Package AID: //aid/0123456789/00
+// Applet:      sahc.sahcApplet
+// Applet AID:  //aid/0123456789/11
+//
+
+// Select sahc.sahcApplet applet
+0x00 0xA4 0x04 0x00 0x06 0x01 0x23 0x45 0x67 0x89 0x11 0x7F;
