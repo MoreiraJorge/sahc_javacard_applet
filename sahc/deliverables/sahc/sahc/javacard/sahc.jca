@@ -1,5 +1,5 @@
 // converted by version  [v3.1.0]
-// on Sat May 21 17:36:23 BST 2022
+// on Sat May 21 17:50:14 BST 2022
 
 .package sahc {
 	.aid 0x1:0x23:0x45:0x67:0x89:0x0;
@@ -7,6 +7,7 @@
 
 	.imports {
 		0xA0:0x0:0x0:0x0:0x62:0x1:0x1 1.8;		//javacard/framework
+		0xA0:0x0:0x0:0x0:0x62:0x1:0x2 1.7;		//javacard/security
 		0xA0:0x0:0x0:0x0:0x62:0x0:0x1 1.0;		//java/lang
 	}
 
@@ -16,18 +17,75 @@
 
 	.constantPool {
 		// 0
-		staticMethodRef sahcApplet/<init>()V;
+		instanceFieldRef byte[] sahcApplet/hash;
 		// 1
-		.classRef sahcApplet;
+		instanceFieldRef byte sahcApplet/isHashEmpty;
 		// 2
 		staticMethodRef 0.3.0()V;		// javacard/framework/Applet.<init>()V
 		// 3
-		virtualMethodRef 0.3.1()V;		// register()V
+		staticMethodRef sahcApplet/<init>()V;
 		// 4
-		staticMethodRef 1.0.0()V;		// java/lang/Object.<init>()V
+		.classRef sahcApplet;
+		// 5
+		virtualMethodRef 0.3.1()V;		// register()V
+		// 6
+		virtualMethodRef 0.10.1()[B;		// getBuffer()[B
+		// 7
+		virtualMethodRef 0.10.14()Z;		// isISOInterindustryCLA()Z
+		// 8
+		staticMethodRef 0.7.1(S)V;		// javacard/framework/ISOException.throwIt(S)V
+		// 9
+		staticMethodRef sahcApplet/init(Ljavacard/framework/APDU;)V;
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+		// 10
+		.classRef 1.12;		// javacard/security/CryptoException
+		// 11
+		staticMethodRef 1.32.0(B)Ljavacard/security/RandomData$OneShot;;		// javacard/security/RandomData$OneShot.open(B)Ljavacard/security/RandomData$OneShot;
+			.descriptor	Ljavacard/security/RandomData$OneShot;	1.32;
+
+		// 12
+		staticMethodRef 0.8.13(SB)[B;		// javacard/framework/JCSystem.makeTransientByteArray(SB)[B
+		// 13
+		virtualMethodRef 0.10.7()S;		// setOutgoing()S
+		// 14
+		virtualMethodRef 1.32.2([BSS)V;		// setSeed([BSS)V
+		// 15
+		virtualMethodRef 1.32.3([BSS)S;		// nextBytes([BSS)S
+		// 16
+		staticMethodRef 0.8.1()V;		// javacard/framework/JCSystem.beginTransaction()V
+		// 17
+		staticMethodRef 1.30.0(B)Ljavacard/security/MessageDigest$OneShot;;		// javacard/security/MessageDigest$OneShot.open(B)Ljavacard/security/MessageDigest$OneShot;
+			.descriptor	Ljavacard/security/MessageDigest$OneShot;	1.30;
+
+		// 18
+		virtualMethodRef 1.30.1([BSS[BS)S;		// doFinal([BSS[BS)S
+		// 19
+		staticMethodRef 0.8.2()V;		// javacard/framework/JCSystem.commitTransaction()V
+		// 20
+		virtualMethodRef 0.10.9(S)V;		// setOutgoingLength(S)V
+		// 21
+		virtualMethodRef 0.10.5([BSS)V;		// sendBytesLong([BSS)V
+		// 22
+		.classRef 0.7;		// javacard/framework/ISOException
+		// 23
+		staticMethodRef 0.7.0(S)V;		// javacard/framework/ISOException.<init>(S)V
+		// 24
+		virtualMethodRef 1.12.1()S;		// getReason()S
+		// 25
+		virtualMethodRef 1.32.5()V;		// close()V
+		// 26
+		staticMethodRef 2.0.0()V;		// java/lang/Object.<init>()V
 	}
 
 	.class public sahcApplet 0 extends 0.3 {		// extends javacard/framework/Applet
+
+		.fields {
+			 byte[] hash 0;		// [B
+			 byte isHashEmpty 1;		// B
+			static final byte APP_CLA = -128;		// B
+			static final byte INIT = 16;		// B
+		}
 
 		.publicMethodTable 7 8 {
 			equals(Ljava/lang/Object;)Z 0;
@@ -47,34 +105,176 @@
 			.stack 1;
 			.locals 0;
 
-				L0:	new 1;		// sahc/sahcApplet
-					invokespecial 0;		// sahc/sahcApplet.<init>()V
+				L0:	new 4;		// sahc/sahcApplet
+					invokespecial 3;		// sahc/sahcApplet.<init>()V
 					return;
 		}
 
 		.method protected <init>()V 1 {
-			.stack 1;
+			.stack 2;
 			.locals 0;
 
 				L0:	aload_0;
 					invokespecial 2;		// javacard/framework/Applet.<init>()V
 					aload_0;
-					invokevirtual 3;		// register()V
+					bspush 32;
+					newarray 11;
+					putfield_a 0;		// reference sahc/sahcApplet.hash
+					sconst_0;
+					putfield_b_this 1;		// byte sahc/sahcApplet.isHashEmpty
+					aload_0;
+					invokevirtual 5;		// register()V
 					return;
 		}
 
 		.method public process(Ljavacard/framework/APDU;)V 7 {
-			.stack 0;
-			.locals 0;
+			.stack 2;
+			.locals 1;
 
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
-				L0:	return;
+				L0:	aload_1;
+					invokevirtual 6;		// getBuffer()[B
+					astore_2;
+				L1:	aload_1;
+					invokevirtual 7;		// isISOInterindustryCLA()Z
+					ifeq L5;
+				L2:	aload_2;
+					sconst_1;
+					baload;
+					bspush -92;
+					if_scmpne L4;
+				L3:	return;
+				L4:	sspush 28160;
+					invokestatic 8;		// javacard/framework/ISOException.throwIt(S)V
+				L5:	aload_2;
+					sconst_0;
+					baload;
+					bspush -128;
+					if_scmpeq L7;
+				L6:	sspush 28160;
+					invokestatic 8;		// javacard/framework/ISOException.throwIt(S)V
+				L7:	aload_2;
+					sconst_1;
+					baload;
+					stableswitch L9 16 16 L8;
+				L8:	aload_0;
+					aload_1;
+					invokespecial 9;		// sahc/sahcApplet.init(Ljavacard/framework/APDU;)V
+					return;
+				L9:	sspush 27904;
+					invokestatic 8;		// javacard/framework/ISOException.throwIt(S)V
+					return;
+		}
+
+		.method private init(Ljavacard/framework/APDU;)V {
+			.stack 6;
+			.locals 7;
+
+			.descriptor	Ljavacard/framework/APDU;	0.10;
+
+				L0:	aconst_null;
+					astore_2;
+				L1:	sconst_1;
+					invokestatic 11;		// javacard/security/RandomData$OneShot.open(B)Ljavacard/security/RandomData$OneShot;
+					astore_2;
+				L2:	getfield_b_this 1;		// byte sahc/sahcApplet.isHashEmpty
+					ifne L12;
+				L3:	bspush 32;
+					sconst_2;
+					invokestatic 12;		// javacard/framework/JCSystem.makeTransientByteArray(SB)[B
+					astore_3;
+				L4:	aload_1;
+					invokevirtual 6;		// getBuffer()[B
+					astore 4;
+				L5:	aload_1;
+					invokevirtual 13;		// setOutgoing()S
+					sstore 5;
+				L6:	sload 5;
+					sconst_2;
+					if_scmpge L8;
+				L7:	sspush 26368;
+					invokestatic 8;		// javacard/framework/ISOException.throwIt(S)V
+				L8:	aconst_null;
+					astore 6;
+				L9:	bspush 8;
+					sconst_2;
+					invokestatic 12;		// javacard/framework/JCSystem.makeTransientByteArray(SB)[B
+					astore 7;
+				L10:	aload_2;
+					aload_3;
+					sconst_0;
+					aload_3;
+					arraylength;
+					invokevirtual 14;		// setSeed([BSS)V
+					aload_2;
+					aload 7;
+					sconst_0;
+					aload 7;
+					arraylength;
+					invokevirtual 15;		// nextBytes([BSS)S
+					pop;
+					invokestatic 16;		// javacard/framework/JCSystem.beginTransaction()V
+					sconst_4;
+					invokestatic 17;		// javacard/security/MessageDigest$OneShot.open(B)Ljavacard/security/MessageDigest$OneShot;
+					astore 6;
+					aload 6;
+					aload 7;
+					sconst_0;
+					sconst_4;
+					getfield_a_this 0;		// reference sahc/sahcApplet.hash
+					sconst_0;
+					invokevirtual 18;		// doFinal([BSS[BS)S
+					pop;
+					sconst_1;
+					putfield_b_this 1;		// byte sahc/sahcApplet.isHashEmpty
+					invokestatic 19;		// javacard/framework/JCSystem.commitTransaction()V
+					aload_1;
+					aload 7;
+					arraylength;
+					invokevirtual 20;		// setOutgoingLength(S)V
+					aload 7;
+					astore 4;
+					aload_1;
+					aload 4;
+					sconst_0;
+					aload 7;
+					arraylength;
+					invokevirtual 21;		// sendBytesLong([BSS)V
+				L11:	goto L18;
+				L12:	new 22;		// javacard/framework/ISOException
+					dup;
+					sspush 27014;
+					invokespecial 23;		// javacard/framework/ISOException.<init>(S)V
+					athrow;
+				L13:	astore_3;
+				L14:	aload_3;
+					invokevirtual 24;		// getReason()S
+					sconst_3;
+					if_scmpeq L16;
+				L15:	aload_3;
+					athrow;
+				L16:	aload_2;
+					invokevirtual 25;		// close()V
+					goto L19;
+				L17:	astore 8;
+					aload_2;
+					invokevirtual 25;		// close()V
+					aload 8;
+					athrow;
+				L18:	aload_2;
+					invokevirtual 25;		// close()V
+				L19:	return;
+			.exceptionTable {
+				// start_block end_block handler_block catch_type_index
+				L2 L13 L13 10;
+				L2 L16 L17 0;
+			}
 		}
 
 	}
 
-	.class final sahcAppletStrings extends 1.0 {		// extends java/lang/Object
+	.class final sahcAppletStrings extends 2.0 {		// extends java/lang/Object
 
 		.fields {
 			static final byte[] Package = {115,97,104,99};		// [B
@@ -93,7 +293,7 @@
 			.locals 0;
 
 				L0:	aload_0;
-					invokespecial 4;		// java/lang/Object.<init>()V
+					invokespecial 26;		// java/lang/Object.<init>()V
 					return;
 		}
 
