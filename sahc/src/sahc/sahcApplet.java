@@ -33,6 +33,8 @@ public class sahcApplet extends Applet {
 	final static byte APP_CLA = (byte) 0x80;
 	
 	final static byte INIT = (byte) 0x10;
+	final static byte ENCRYPT = (byte) 0x11;
+	final static byte DECRYPT = (byte) 0x12;
 	
 	byte[] hash = new byte[32];
 	byte isHashEmpty = 0;
@@ -68,7 +70,6 @@ public class sahcApplet extends Applet {
     @Override
     public void process(APDU apdu) {
     	byte[] buffer = apdu.getBuffer();
-        // check SELECT APDU command
 
         if (apdu.isISOInterindustryCLA()) {
             if (buffer[ISO7816.OFFSET_INS] == (byte) (0xA4)) {
@@ -85,12 +86,18 @@ public class sahcApplet extends Applet {
             case INIT:
                 init(apdu);
                 return;
+            case ENCRYPT:
+            	encrypt(apdu);
+            	return;
+            case DECRYPT:
+            	decrypt(apdu);
+            	return;
             default:
                 ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
         }
     }
-    
-    @SuppressWarnings("deprecation")
+
+	@SuppressWarnings("deprecation")
 	private void init(APDU apdu) {
     	OneShot rng = null;
     	rng = RandomData.OneShot.open(RandomData.ALG_PSEUDO_RANDOM);
@@ -139,5 +146,23 @@ public class sahcApplet extends Applet {
         } finally {
         	rng.close();
         }
+        
+        
     }
+	
+	private void encrypt(APDU apdu) {
+		byte[] buffer = apdu.getBuffer();
+		short recvLen = apdu.setIncomingAndReceive();
+		
+		//short LC = apdu.getIncomingLength();
+		
+		while (recvLen > 0) {
+            recvLen = apdu.receiveBytes(ISO7816.OFFSET_CDATA);
+        }
+        
+	}
+	
+	private void decrypt(APDU apdu) {
+		// TODO Auto-generated method stub
+	}
 }
