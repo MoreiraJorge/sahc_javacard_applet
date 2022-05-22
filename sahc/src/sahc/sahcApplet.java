@@ -156,30 +156,30 @@ public class sahcApplet extends Applet {
     }
 	
 	private void encrypt(APDU apdu) {
+		byte[] buffer = apdu.getBuffer();
+		short dataLen = apdu.setIncomingAndReceive();
+		byte[] cipher = JCSystem.makeTransientByteArray((short) 8, JCSystem.CLEAR_ON_DESELECT);
+		
 		try {
 			
-			byte[] buffer = apdu.getBuffer();
-			short lc = apdu.getIncomingLength();
-			byte[] body = new byte[lc];
+			if (isHashEmpty == 0) {
 			
-			AESKey aesKey = (AESKey) KeyBuilder.buildKey(KeyBuilder.TYPE_AES, KeyBuilder.LENGTH_AES_128, false); 
-			aesKey.setKey(hash, (short) 0);
-			
-			Cipher encryptCipher = Cipher.getInstance(Cipher.ALG_AES_BLOCK_128_CBC_NOPAD,false);
-			encryptCipher.init(aesKey, Cipher.MODE_ENCRYPT);
-			
-			
-			short bytesRead = apdu.setIncomingAndReceive();
-			short echoOffset = (short) 0;
-			
-			while (bytesRead > 0) {
-			   Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_CDATA, body, echoOffset, bytesRead);
-			   echoOffset += bytesRead;
-			   bytesRead = apdu.receiveBytes(ISO7816.OFFSET_CDATA);
-			}
-			
-			
-		} catch (Exception e) {
+				DESKey aesKey = (DESKey) KeyBuilder.buildKey(KeyBuilder.ALG_TYPE_DES, KeyBuilder.LENGTH_DES3_2KEY, false); 
+				aesKey.setKey(hash, (short) 0);
+				
+				Cipher encryptCipher = Cipher.getInstance(Cipher.ALG_DES_CBC_ISO9797_M2, false);
+				encryptCipher.init(aesKey, Cipher.MODE_ENCRYPT);
+				encryptCipher.doFinal(buffer, (short) ISO7816.OFFSET_CDATA, dataLen, cipher, (short) 0);
+				
+				Util.arrayCopyNonAtomic(cipher, (short) 0, buffer, ISO7816.OFFSET_CDATA, (short) cipher.length);
+					
+				apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (short) cipher.length);
+				
+			} else {
+        		throw new ISOException(ISO7816.SW_COMMAND_NOT_ALLOWED);
+        	}
+		} catch (CryptoException e) {
+			e.getReason();
 			throw e;
 		}
 	}

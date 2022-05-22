@@ -1,5 +1,5 @@
 // converted by version  [v3.1.0]
-// on Sun May 22 16:06:42 BST 2022
+// on Sun May 22 19:18:18 BST 2022
 
 .package sahc {
 	.aid 0x1:0x23:0x45:0x67:0x89:0x0;
@@ -84,30 +84,28 @@
 		// 27
 		virtualMethodRef 1.32.5()V;		// close()V
 		// 28
-		.classRef 3.2;		// java/lang/Exception
+		virtualMethodRef 0.10.6()S;		// setIncomingAndReceive()S
 		// 29
-		virtualMethodRef 0.10.15()S;		// getIncomingLength()S
-		// 30
 		staticMethodRef 1.13.0(BSZ)Ljavacard/security/Key;;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
 			.descriptor	Ljavacard/security/Key;	1.0;
 
+		// 30
+		.classRef 1.10;		// javacard/security/DESKey
 		// 31
-		.classRef 1.20;		// javacard/security/AESKey
-		// 32
 		staticMethodRef 2.1.0(BZ)Ljavacardx/crypto/Cipher;;		// javacardx/crypto/Cipher.getInstance(BZ)Ljavacardx/crypto/Cipher;
 			.descriptor	Ljavacardx/crypto/Cipher;	2.1;
 
-		// 33
+		// 32
 		virtualMethodRef 2.1.3(Ljavacard/security/Key;B)V;		// init(Ljavacard/security/Key;B)V
 			.descriptor	Ljavacard/security/Key;	1.0;
 
+		// 33
+		virtualMethodRef 2.1.1([BSS[BS)S;		// doFinal([BSS[BS)S
 		// 34
-		virtualMethodRef 0.10.6()S;		// setIncomingAndReceive()S
-		// 35
 		staticMethodRef 0.16.2([BS[BSS)S;		// javacard/framework/Util.arrayCopyNonAtomic([BS[BSS)S
+		// 35
+		virtualMethodRef 0.10.8(SS)V;		// setOutgoingAndSend(SS)V
 		// 36
-		virtualMethodRef 0.10.3(S)S;		// receiveBytes(S)S
-		// 37
 		staticMethodRef 3.0.0()V;		// java/lang/Object.<init>()V
 	}
 
@@ -316,8 +314,8 @@
 		}
 
 		.method private encrypt(Ljavacard/framework/APDU;)V {
-			.stack 5;
-			.locals 7;
+			.stack 6;
+			.locals 5;
 
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
@@ -325,60 +323,69 @@
 					invokevirtual 6;		// getBuffer()[B
 					astore_2;
 				L1:	aload_1;
-					invokevirtual 29;		// getIncomingLength()S
+					invokevirtual 28;		// setIncomingAndReceive()S
 					sstore_3;
-				L2:	sload_3;
-					newarray 11;
+				L2:	bspush 8;
+					sconst_2;
+					invokestatic 14;		// javacard/framework/JCSystem.makeTransientByteArray(SB)[B
 					astore 4;
-				L3:	bspush 15;
+				L3:	getfield_b_this 1;		// byte sahc/sahcApplet.isHashEmpty
+					ifne L8;
+				L4:	sconst_1;
 					sspush 128;
 					sconst_0;
-					invokestatic 30;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
-					checkcast 0 31;		// T_CLASSORINTERFACE javacard/security/AESKey
+					invokestatic 29;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
+					checkcast 0 30;		// T_CLASSORINTERFACE javacard/security/DESKey
 					astore 5;
-				L4:	aload 5;
+				L5:	aload 5;
 					getfield_a_this 0;		// reference sahc/sahcApplet.hash
 					sconst_0;
-					invokeinterface 3 31 4;		// javacard/security/AESKey
-					bspush 13;
+					invokeinterface 3 30 5;		// javacard/security/DESKey
+					sconst_3;
 					sconst_0;
-					invokestatic 32;		// javacardx/crypto/Cipher.getInstance(BZ)Ljavacardx/crypto/Cipher;
+					invokestatic 31;		// javacardx/crypto/Cipher.getInstance(BZ)Ljavacardx/crypto/Cipher;
 					astore 6;
-				L5:	aload 6;
+				L6:	aload 6;
 					aload 5;
 					sconst_2;
-					invokevirtual 33;		// init(Ljavacard/security/Key;B)V
-					aload_1;
-					invokevirtual 34;		// setIncomingAndReceive()S
-					sstore 7;
-				L6:	sconst_0;
-					sstore 8;
-				L7:	goto L9;
-				L8:	aload_2;
+					invokevirtual 32;		// init(Ljavacard/security/Key;B)V
+					aload 6;
+					aload_2;
+					sconst_5;
+					sload_3;
+					aload 4;
+					sconst_0;
+					invokevirtual 33;		// doFinal([BSS[BS)S
+					pop;
+					aload 4;
+					sconst_0;
+					aload_2;
 					sconst_5;
 					aload 4;
-					sload 8;
-					sload 7;
-					invokestatic 35;		// javacard/framework/Util.arrayCopyNonAtomic([BS[BSS)S
+					arraylength;
+					invokestatic 34;		// javacard/framework/Util.arrayCopyNonAtomic([BS[BSS)S
 					pop;
-					sload 8;
-					sload 7;
-					sadd;
-					sstore 8;
 					aload_1;
 					sconst_5;
-					invokevirtual 36;		// receiveBytes(S)S
-					sstore 7;
-				L9:	sload 7;
-					ifgt L8;
-				L10:	goto L13;
-				L11:	astore_2;
-				L12:	aload_2;
+					aload 4;
+					arraylength;
+					invokevirtual 35;		// setOutgoingAndSend(SS)V
+				L7:	goto L11;
+				L8:	new 24;		// javacard/framework/ISOException
+					dup;
+					sspush 27014;
+					invokespecial 25;		// javacard/framework/ISOException.<init>(S)V
 					athrow;
-				L13:	return;
+				L9:	astore 5;
+				L10:	aload 5;
+					invokevirtual 26;		// getReason()S
+					pop;
+					aload 5;
+					athrow;
+				L11:	return;
 			.exceptionTable {
 				// start_block end_block handler_block catch_type_index
-				L0 L10 L11 28;
+				L3 L9 L9 12;
 			}
 		}
 
@@ -412,7 +419,7 @@
 			.locals 0;
 
 				L0:	aload_0;
-					invokespecial 37;		// java/lang/Object.<init>()V
+					invokespecial 36;		// java/lang/Object.<init>()V
 					return;
 		}
 
