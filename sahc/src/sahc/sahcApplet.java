@@ -11,12 +11,17 @@ import javacard.framework.Applet;
 import javacard.framework.ISO7816;
 import javacard.framework.ISOException;
 import javacard.framework.JCSystem;
+import javacard.framework.Util;
+import javacard.security.AESKey;
 import javacard.security.CryptoException;
+import javacard.security.DESKey;
+import javacard.security.KeyBuilder;
 import javacard.security.MessageDigest;
 import javacard.security.RandomData;
 import javacard.security.RandomData.OneShot;
 import javacardx.annotations.StringDef;
 import javacardx.annotations.StringPool;
+import javacardx.crypto.Cipher;
 
 /**
  * Applet class
@@ -151,15 +156,32 @@ public class sahcApplet extends Applet {
     }
 	
 	private void encrypt(APDU apdu) {
-		byte[] buffer = apdu.getBuffer();
-		short recvLen = apdu.setIncomingAndReceive();
-		
-		//short LC = apdu.getIncomingLength();
-		
-		while (recvLen > 0) {
-            recvLen = apdu.receiveBytes(ISO7816.OFFSET_CDATA);
-        }
-        
+		try {
+			
+			byte[] buffer = apdu.getBuffer();
+			short lc = apdu.getIncomingLength();
+			byte[] body = new byte[lc];
+			
+			AESKey aesKey = (AESKey) KeyBuilder.buildKey(KeyBuilder.TYPE_AES, KeyBuilder.LENGTH_AES_128, false); 
+			aesKey.setKey(hash, (short) 0);
+			
+			Cipher encryptCipher = Cipher.getInstance(Cipher.ALG_AES_BLOCK_128_CBC_NOPAD,false);
+			encryptCipher.init(aesKey, Cipher.MODE_ENCRYPT);
+			
+			
+			short bytesRead = apdu.setIncomingAndReceive();
+			short echoOffset = (short) 0;
+			
+			while (bytesRead > 0) {
+			   Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_CDATA, body, echoOffset, bytesRead);
+			   echoOffset += bytesRead;
+			   bytesRead = apdu.receiveBytes(ISO7816.OFFSET_CDATA);
+			}
+			
+			
+		} catch (Exception e) {
+			throw e;
+		}
 	}
 	
 	private void decrypt(APDU apdu) {

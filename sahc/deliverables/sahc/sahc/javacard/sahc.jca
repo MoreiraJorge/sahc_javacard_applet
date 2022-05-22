@@ -1,5 +1,5 @@
 // converted by version  [v3.1.0]
-// on Sat May 21 18:52:51 BST 2022
+// on Sun May 22 16:06:42 BST 2022
 
 .package sahc {
 	.aid 0x1:0x23:0x45:0x67:0x89:0x0;
@@ -8,6 +8,7 @@
 	.imports {
 		0xA0:0x0:0x0:0x0:0x62:0x1:0x1 1.8;		//javacard/framework
 		0xA0:0x0:0x0:0x0:0x62:0x1:0x2 1.7;		//javacard/security
+		0xA0:0x0:0x0:0x0:0x62:0x2:0x1 1.7;		//javacardx/crypto
 		0xA0:0x0:0x0:0x0:0x62:0x0:0x1 1.0;		//java/lang
 	}
 
@@ -83,11 +84,31 @@
 		// 27
 		virtualMethodRef 1.32.5()V;		// close()V
 		// 28
-		virtualMethodRef 0.10.6()S;		// setIncomingAndReceive()S
+		.classRef 3.2;		// java/lang/Exception
 		// 29
-		virtualMethodRef 0.10.3(S)S;		// receiveBytes(S)S
+		virtualMethodRef 0.10.15()S;		// getIncomingLength()S
 		// 30
-		staticMethodRef 2.0.0()V;		// java/lang/Object.<init>()V
+		staticMethodRef 1.13.0(BSZ)Ljavacard/security/Key;;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
+			.descriptor	Ljavacard/security/Key;	1.0;
+
+		// 31
+		.classRef 1.20;		// javacard/security/AESKey
+		// 32
+		staticMethodRef 2.1.0(BZ)Ljavacardx/crypto/Cipher;;		// javacardx/crypto/Cipher.getInstance(BZ)Ljavacardx/crypto/Cipher;
+			.descriptor	Ljavacardx/crypto/Cipher;	2.1;
+
+		// 33
+		virtualMethodRef 2.1.3(Ljavacard/security/Key;B)V;		// init(Ljavacard/security/Key;B)V
+			.descriptor	Ljavacard/security/Key;	1.0;
+
+		// 34
+		virtualMethodRef 0.10.6()S;		// setIncomingAndReceive()S
+		// 35
+		staticMethodRef 0.16.2([BS[BSS)S;		// javacard/framework/Util.arrayCopyNonAtomic([BS[BSS)S
+		// 36
+		virtualMethodRef 0.10.3(S)S;		// receiveBytes(S)S
+		// 37
+		staticMethodRef 3.0.0()V;		// java/lang/Object.<init>()V
 	}
 
 	.class public sahcApplet 0 extends 0.3 {		// extends javacard/framework/Applet
@@ -295,8 +316,8 @@
 		}
 
 		.method private encrypt(Ljavacard/framework/APDU;)V {
-			.stack 2;
-			.locals 2;
+			.stack 5;
+			.locals 7;
 
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
@@ -304,16 +325,61 @@
 					invokevirtual 6;		// getBuffer()[B
 					astore_2;
 				L1:	aload_1;
-					invokevirtual 28;		// setIncomingAndReceive()S
+					invokevirtual 29;		// getIncomingLength()S
 					sstore_3;
-				L2:	goto L4;
-				L3:	aload_1;
+				L2:	sload_3;
+					newarray 11;
+					astore 4;
+				L3:	bspush 15;
+					sspush 128;
+					sconst_0;
+					invokestatic 30;		// javacard/security/KeyBuilder.buildKey(BSZ)Ljavacard/security/Key;
+					checkcast 0 31;		// T_CLASSORINTERFACE javacard/security/AESKey
+					astore 5;
+				L4:	aload 5;
+					getfield_a_this 0;		// reference sahc/sahcApplet.hash
+					sconst_0;
+					invokeinterface 3 31 4;		// javacard/security/AESKey
+					bspush 13;
+					sconst_0;
+					invokestatic 32;		// javacardx/crypto/Cipher.getInstance(BZ)Ljavacardx/crypto/Cipher;
+					astore 6;
+				L5:	aload 6;
+					aload 5;
+					sconst_2;
+					invokevirtual 33;		// init(Ljavacard/security/Key;B)V
+					aload_1;
+					invokevirtual 34;		// setIncomingAndReceive()S
+					sstore 7;
+				L6:	sconst_0;
+					sstore 8;
+				L7:	goto L9;
+				L8:	aload_2;
 					sconst_5;
-					invokevirtual 29;		// receiveBytes(S)S
-					sstore_3;
-				L4:	sload_3;
-					ifgt L3;
-				L5:	return;
+					aload 4;
+					sload 8;
+					sload 7;
+					invokestatic 35;		// javacard/framework/Util.arrayCopyNonAtomic([BS[BSS)S
+					pop;
+					sload 8;
+					sload 7;
+					sadd;
+					sstore 8;
+					aload_1;
+					sconst_5;
+					invokevirtual 36;		// receiveBytes(S)S
+					sstore 7;
+				L9:	sload 7;
+					ifgt L8;
+				L10:	goto L13;
+				L11:	astore_2;
+				L12:	aload_2;
+					athrow;
+				L13:	return;
+			.exceptionTable {
+				// start_block end_block handler_block catch_type_index
+				L0 L10 L11 28;
+			}
 		}
 
 		.method private decrypt(Ljavacard/framework/APDU;)V {
@@ -327,7 +393,7 @@
 
 	}
 
-	.class final sahcAppletStrings extends 2.0 {		// extends java/lang/Object
+	.class final sahcAppletStrings extends 3.0 {		// extends java/lang/Object
 
 		.fields {
 			static final byte[] Package = {115,97,104,99};		// [B
@@ -346,7 +412,7 @@
 			.locals 0;
 
 				L0:	aload_0;
-					invokespecial 30;		// java/lang/Object.<init>()V
+					invokespecial 37;		// java/lang/Object.<init>()V
 					return;
 		}
 
