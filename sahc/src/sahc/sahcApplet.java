@@ -12,13 +12,11 @@ import javacard.framework.ISO7816;
 import javacard.framework.ISOException;
 import javacard.framework.JCSystem;
 import javacard.framework.Util;
-import javacard.security.AESKey;
 import javacard.security.CryptoException;
 import javacard.security.DESKey;
 import javacard.security.KeyBuilder;
 import javacard.security.MessageDigest;
 import javacard.security.RandomData;
-import javacard.security.RandomData.OneShot;
 import javacardx.annotations.StringDef;
 import javacardx.annotations.StringPool;
 import javacardx.crypto.Cipher;
@@ -38,11 +36,13 @@ public class sahcApplet extends Applet {
 	final static byte APP_CLA = (byte) 0x80;
 	
 	final static byte INIT = (byte) 0x10;
-	final static byte ENCRYPT = (byte) 0x11;
-	final static byte DECRYPT = (byte) 0x12;
+	final static byte CIPHER = (byte) 0x11;
 	
 	byte[] hash = new byte[32];
-	byte isHashEmpty = 0;
+	byte isHashEmpty = 1;
+	
+	DESKey desKey = (DESKey) KeyBuilder.buildKey(KeyBuilder.ALG_TYPE_DES, KeyBuilder.LENGTH_DES3_2KEY, false);
+	Cipher encryptCipher = Cipher.getInstance(Cipher.ALG_DES_CBC_ISO9797_M2, false);
 	
     /**
      * Installs this applet.
@@ -91,11 +91,8 @@ public class sahcApplet extends Applet {
             case INIT:
                 init(apdu);
                 return;
-            case ENCRYPT:
-            	encrypt(apdu);
-            	return;
-            case DECRYPT:
-            	decrypt(apdu);
+            case CIPHER:
+            	cipherDes(apdu);
             	return;
             default:
                 ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
@@ -104,12 +101,12 @@ public class sahcApplet extends Applet {
 
 	@SuppressWarnings("deprecation")
 	private void init(APDU apdu) {
-    	OneShot rng = null;
-    	rng = RandomData.OneShot.open(RandomData.ALG_PSEUDO_RANDOM);
+    	RandomData rng = null;
+    	rng = RandomData.getInstance(RandomData.ALG_PSEUDO_RANDOM);
     	
         try {
         	
-        	if (isHashEmpty == 0) {
+        	if (isHashEmpty == 1) {
         		
         		byte[] seedBuffer = JCSystem.makeTransientByteArray((short) 32, JCSystem.CLEAR_ON_DESELECT);
         		byte[] buffer = apdu.getBuffer();
@@ -130,7 +127,7 @@ public class sahcApplet extends Applet {
 	            dig = MessageDigest.OneShot.open(MessageDigest.ALG_SHA_256);
 	            dig.doFinal(key, (short) 0, MessageDigest.ALG_SHA_256, hash, (short) 0);
 	            
-	            isHashEmpty = 1;
+	            isHashEmpty = 0;
 	            
 	            JCSystem.commitTransaction();
 	            
@@ -148,33 +145,29 @@ public class sahcApplet extends Applet {
             if (e.getReason() != CryptoException.NO_SUCH_ALGORITHM) {
                  throw e;
             }
-        } finally {
-        	rng.close();
         }
-        
         
     }
 	
-	private void encrypt(APDU apdu) {
-		byte[] buffer = apdu.getBuffer();
-		short dataLen = apdu.setIncomingAndReceive();
-		byte[] cipher = JCSystem.makeTransientByteArray((short) 8, JCSystem.CLEAR_ON_DESELECT);
-		
+	private void cipherDes(APDU apdu) {
 		try {
-			
 			if (isHashEmpty == 0) {
-			
-				DESKey aesKey = (DESKey) KeyBuilder.buildKey(KeyBuilder.ALG_TYPE_DES, KeyBuilder.LENGTH_DES3_2KEY, false); 
-				aesKey.setKey(hash, (short) 0);
+				byte[] buffer = apdu.getBuffer();
+				short dataLen = apdu.setIncomingAndReceive();
+				byte mode = buffer[ISO7816.OFFSET_P1] == (byte)0x00 ? Cipher.MODE_ENCRYPT : Cipher.MODE_DECRYPT;
+				
+				short outgoingSize = buffer[ISO7816.OFFSET_P1] == (byte)0x00 ? getCipherSize(dataLen) : buffer[ISO7816.OFFSET_P2];
+				byte[] cipher = JCSystem.makeTransientByteArray(outgoingSize, JCSystem.CLEAR_ON_DESELECT);
+				
+				DESKey desKey = (DESKey) KeyBuilder.buildKey(KeyBuilder.ALG_TYPE_DES, KeyBuilder.LENGTH_DES3_2KEY, false); 
+				desKey.setKey(hash, (short) 0);
 				
 				Cipher encryptCipher = Cipher.getInstance(Cipher.ALG_DES_CBC_ISO9797_M2, false);
-				encryptCipher.init(aesKey, Cipher.MODE_ENCRYPT);
+				encryptCipher.init(desKey, mode);
 				encryptCipher.doFinal(buffer, (short) ISO7816.OFFSET_CDATA, dataLen, cipher, (short) 0);
 				
 				Util.arrayCopyNonAtomic(cipher, (short) 0, buffer, ISO7816.OFFSET_CDATA, (short) cipher.length);
-					
 				apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (short) cipher.length);
-				
 			} else {
         		throw new ISOException(ISO7816.SW_COMMAND_NOT_ALLOWED);
         	}
@@ -184,7 +177,10 @@ public class sahcApplet extends Applet {
 		}
 	}
 	
-	private void decrypt(APDU apdu) {
-		// TODO Auto-generated method stub
+	private short getCipherSize(short dataLen) {
+		if ((dataLen % 8) == 0) {
+			return (short) (dataLen + 8);
+		}
+		return (short) (dataLen + (8 - (dataLen % 8)));
 	}
 }
