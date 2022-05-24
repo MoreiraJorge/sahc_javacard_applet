@@ -1,5 +1,5 @@
 // converted by version  [v3.1.0]
-// on Tue May 24 00:39:28 BST 2022
+// on Tue May 24 01:13:26 BST 2022
 
 .package sahc {
 	.aid 0x1:0x23:0x45:0x67:0x89:0x0;
@@ -24,7 +24,7 @@
 		// 2
 		instanceFieldRef 1.10 sahcApplet/desKey;
 		// 3
-		instanceFieldRef 2.1 sahcApplet/encryptCipher;
+		instanceFieldRef 2.1 sahcApplet/cipher;
 		// 4
 		instanceFieldRef byte[] sahcApplet/iv;
 		// 5
@@ -122,7 +122,7 @@
 		.fields {
 			 byte[] hash 0;		// [B
 			 1.10 desKey 1;		// Ljavacard/security/DESKey;
-			 2.1 encryptCipher 2;		// Ljavacardx/crypto/Cipher;
+			 2.1 cipher 2;		// Ljavacardx/crypto/Cipher;
 			 byte[] iv 3;		// [B
 			 byte isHashEmpty 4;		// B
 			 byte isIvInitialized 5;		// B
@@ -178,7 +178,7 @@
 					sconst_3;
 					sconst_0;
 					invokestatic 8;		// javacardx/crypto/Cipher.getInstance(BZ)Ljavacardx/crypto/Cipher;
-					putfield_a 3;		// reference sahc/sahcApplet.encryptCipher
+					putfield_a 3;		// reference sahc/sahcApplet.cipher
 					aload_0;
 					bspush 8;
 					newarray 11;
@@ -361,15 +361,15 @@
 
 		.method private cipherDes(Ljavacard/framework/APDU;)V {
 			.stack 6;
-			.locals 7;
+			.locals 6;
 
 			.descriptor	Ljavacard/framework/APDU;	0.10;
 
 				L0:	getfield_b_this 1;		// byte sahc/sahcApplet.isHashEmpty
-					ifne_w L17;
+					ifne_w L16;
 				L1:	getfield_b_this 5;		// byte sahc/sahcApplet.isIvInitialized
 					sconst_1;
-					if_scmpne_w L17;
+					if_scmpne L16;
 				L2:	aload_1;
 					invokevirtual 13;		// getBuffer()[B
 					astore_2;
@@ -410,11 +410,7 @@
 					getfield_a_this 0;		// reference sahc/sahcApplet.hash
 					sconst_0;
 					invokeinterface 3 6 5;		// javacard/security/DESKey
-					sconst_3;
-					sconst_0;
-					invokestatic 8;		// javacardx/crypto/Cipher.getInstance(BZ)Ljavacardx/crypto/Cipher;
-					astore 8;
-				L15:	aload 8;
+					getfield_a_this 3;		// reference sahc/sahcApplet.cipher
 					aload 7;
 					sload 4;
 					getfield_a_this 4;		// reference sahc/sahcApplet.iv
@@ -422,7 +418,7 @@
 					getfield_a_this 4;		// reference sahc/sahcApplet.iv
 					arraylength;
 					invokevirtual 37;		// init(Ljavacard/security/Key;B[BSS)V
-					aload 8;
+					getfield_a_this 3;		// reference sahc/sahcApplet.cipher
 					aload_2;
 					sconst_5;
 					sload_3;
@@ -443,22 +439,22 @@
 					aload 6;
 					arraylength;
 					invokevirtual 39;		// setOutgoingAndSend(SS)V
-				L16:	goto L20;
-				L17:	new 33;		// javacard/framework/ISOException
+				L15:	goto L19;
+				L16:	new 33;		// javacard/framework/ISOException
 					dup;
 					sspush 27014;
 					invokespecial 34;		// javacard/framework/ISOException.<init>(S)V
 					athrow;
-				L18:	astore_2;
-				L19:	aload_2;
+				L17:	astore_2;
+				L18:	aload_2;
 					invokevirtual 35;		// getReason()S
 					pop;
 					aload_2;
 					athrow;
-				L20:	return;
+				L19:	return;
 			.exceptionTable {
 				// start_block end_block handler_block catch_type_index
-				L0 L18 L18 19;
+				L0 L17 L17 19;
 			}
 		}
 

@@ -1,9 +1,3 @@
-/** 
- * Copyright (c) 1998, 2021, Oracle and/or its affiliates. All rights reserved.
- * 
- */
-
-
 package sahc;
 
 import javacard.framework.APDU;
@@ -22,9 +16,11 @@ import javacardx.annotations.StringPool;
 import javacardx.crypto.Cipher;
 
 /**
- * Applet class
- * 
- * @author <user>
+ * Sahc Applet class by:
+ * Jorge Moreira
+ * Joaquim Barbosa
+ * Vasco Silva
+ * @author Group D 
  */
 @StringPool(value = {
 	    @StringDef(name = "Package", value = "sahc"),
@@ -43,7 +39,7 @@ public class sahcApplet extends Applet {
 	byte isHashEmpty = 1;
 	
 	DESKey desKey = (DESKey) KeyBuilder.buildKey(KeyBuilder.ALG_TYPE_DES, KeyBuilder.LENGTH_DES3_2KEY, false);
-	Cipher encryptCipher = Cipher.getInstance(Cipher.ALG_DES_CBC_ISO9797_M2, false);
+	Cipher cipher = Cipher.getInstance(Cipher.ALG_DES_CBC_ISO9797_M2, false);
 	
 	byte[] iv = new byte[8];
 	byte isIvInitialized = 0;
@@ -107,7 +103,11 @@ public class sahcApplet extends Applet {
     }
     
     /**
-     * 
+     * This function initializes and Hash
+     * that will be used by the applet to encrypt
+     * and decrypt data, and also generates and 
+     * returns a secret in the APDU
+     * if the user doesn't send his own key
      * @param apdu The incoming APDU
      */
 	@SuppressWarnings("deprecation")
@@ -119,15 +119,19 @@ public class sahcApplet extends Applet {
         	
         	if (isHashEmpty == 1) {
         		byte[] buffer = apdu.getBuffer();
+        		//Flag that indicates if data is coming from the user
         		short keyMode = buffer[ISO7816.OFFSET_P1];
         		byte[] key = null;
         		
+        		/* If there is no data, random values are generated for the key,
+        		 * and the key is set.
+        		 */
             	if(keyMode == (byte)0x00) {
             		key = JCSystem.makeTransientByteArray((short) 8, JCSystem.CLEAR_ON_DESELECT);
 	            	byte[] seedBuffer = JCSystem.makeTransientByteArray((short) 32, JCSystem.CLEAR_ON_DESELECT);
 	            	rng.setSeed(seedBuffer, (short) 0, (short) seedBuffer.length);
 	            	rng.nextBytes(key, (short) 0, (short) key.length);
-            	} else {
+            	} else { //Otherwise, the key is generated with the user's input
             		short lc = apdu.setIncomingAndReceive();
             		
             		if (lc != 8) {
@@ -148,6 +152,7 @@ public class sahcApplet extends Applet {
 	            
 	            JCSystem.commitTransaction();
 	            
+	            //If the user didn't send a key, the generated key should be returned
 	            if(keyMode == (byte)0x00) {
 		            apdu.setOutgoing();
 		            apdu.setOutgoingLength((short) key.length);
@@ -167,7 +172,9 @@ public class sahcApplet extends Applet {
     }
 	
 	/**
-	 * 
+	 * Function that uses DES cipher to 
+	 * Encrypt or Decrypt the incoming data
+	 * from the APDU
 	 * @param apdu The incoming APDU
 	 */
 	private void cipherDes(APDU apdu) {
@@ -175,18 +182,29 @@ public class sahcApplet extends Applet {
 			if (isHashEmpty == 0  && isIvInitialized == 1) {
 				byte[] buffer = apdu.getBuffer();
 				short dataLen = apdu.setIncomingAndReceive();
+				
+				//Sets the cipher mode to ENCRYPT when P1 is 0x00 otherwise its DECRYPT
 				byte mode = buffer[ISO7816.OFFSET_P1] == (byte)0x00 ? Cipher.MODE_ENCRYPT : Cipher.MODE_DECRYPT;
 				
+				/*
+				 * The outgoing size is calculated according to if the result will be a cipher or the password.
+				 * If the cipher encrypts, the result array should match the cipher in size, otherwise
+				 * if the result is the password (decrypt), the length is the same as the password.
+				 * The length of the password is sent via P2 parameter.
+				 * */
 				short outgoingSize = buffer[ISO7816.OFFSET_P1] == (byte)0x00 ? getCipherSize(dataLen) : buffer[ISO7816.OFFSET_P2];
 				byte[] result = JCSystem.makeTransientByteArray(outgoingSize, JCSystem.CLEAR_ON_DESELECT);
 				
+				//Set the key for DES with the hash generated in init()
 				DESKey desKey = (DESKey) KeyBuilder.buildKey(KeyBuilder.ALG_TYPE_DES, KeyBuilder.LENGTH_DES3_2KEY, false); 
 				desKey.setKey(hash, (short) 0);
 				
-				Cipher cipher = Cipher.getInstance(Cipher.ALG_DES_CBC_ISO9797_M2, false);
+				//initializes the cipher with the hash and iv
 				cipher.init(desKey, mode, iv, (short) 0, (short) iv.length);
+				//executes encrypt / decrypt
 				cipher.doFinal(buffer, (short) ISO7816.OFFSET_CDATA, dataLen, result, (short) 0);
 				
+				//copy the result to the buffer and send
 				Util.arrayCopyNonAtomic(result, (short) 0, buffer, ISO7816.OFFSET_CDATA, (short) result.length);
 				apdu.setOutgoingAndSend(ISO7816.OFFSET_CDATA, (short) result.length);
 			} else {
